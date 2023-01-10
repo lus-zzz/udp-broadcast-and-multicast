@@ -102,11 +102,13 @@ bool udp_broadcast::send_broadcast(int port)
 	addrto.sin_port=htons(port);
 	int nlen=sizeof(addrto);
  
+	int index = 0;
 	while(!exitProgram)
 	{
 		sleep(1);
 		//从广播地址发送消息
-		char smsg[] = {"abcdef"};
+		char smsg[4];
+		sprintf(smsg, "%d", index++);
 		int ret=sendto(sock, smsg, strlen(smsg), 0, (sockaddr*)&addrto, nlen);
 		if(ret<0)
 		{
@@ -150,11 +152,14 @@ bool udp_multicast::send_multicast(const char *group, int port)
 	addrto.sin_port=htons(port);
 	int nlen=sizeof(addrto);
  
+	int index = 0;
 	while(!exitProgram)
 	{
 		sleep(1);
 		//从组播地址发送消息
-		char smsg[] = {"abcdef"};
+		char smsg[4];
+		bzero(smsg, 4);
+		sprintf(smsg, "%d", index++);
 		int ret=sendto(sock, smsg, strlen(smsg), 0, (sockaddr*)&addrto, nlen);
 		if(ret<0)
 		{
