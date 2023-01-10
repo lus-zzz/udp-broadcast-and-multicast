@@ -4,13 +4,13 @@
 
 ## Compile with cmake
 
-## use 
+## use
 ### send_broadcast
-./md_udp 1
+./md_udp 1 abcd
 ### receive_broadcast
 ./md_udp 2
 ### send_multicast
-./md_udp 3
+./md_udp 3 abcd
 ### receive_multicast
 ./md_udp 4
 
