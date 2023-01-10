@@ -220,12 +220,12 @@ bool udp_multicast::receive_multicast(const char *group, int port)
 	}
  
 	int len = sizeof(sockaddr_in);
-	char smsg[100] = {0};
+	char smsg[BUFFER_SIZE] = {0};
  
 	while(!exitProgram)
 	{
 		//从组播地址接受消息
-		int ret=recvfrom(sock, smsg, 100, 0, (struct sockaddr*)&from,(socklen_t*)&len);
+		int ret=recvfrom(sock, smsg, BUFFER_SIZE, 0, (struct sockaddr*)&from,(socklen_t*)&len);
 		if (ret > 0)
 		{		
 			_on_read(smsg, ret, (struct sockaddr*)&from, len);
