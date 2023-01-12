@@ -110,10 +110,10 @@ bool udp_broadcast::send_broadcast(const char* smsg, int smsg_len, int port)
  
 	int sock = -1;
 	if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == -1) 
-	{   
+	{
 		cout<<"socket error"<<endl;	
 		return false;
-	}   
+	}
 	
 	const int opt = 1;
 	//设置该套接字为广播类型，
@@ -169,6 +169,15 @@ bool udp_multicast::send_multicast(const char* smsg, int smsg_len, const char *g
 	addrto.sin_addr.s_addr=inet_addr(group);
 	addrto.sin_port=htons(port);
 	int nlen=sizeof(addrto);
+
+		//发送组播忽略本机
+	int loop = 0;
+	int nb = setsockopt(sock, IPPROTO_IP, IP_MULTICAST_LOOP, (char *)&loop,sizeof(loop));
+	if(nb == -1)
+	{
+		cout<<"set socket error..."<<endl;
+		return false;
+	}
  
 	//从组播地址发送消息
 	int ret=sendto(sock, smsg, strlen(smsg), 0, (sockaddr*)&addrto, nlen);

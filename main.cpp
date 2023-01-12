@@ -26,7 +26,6 @@ int main(int argc, char *argv[]) {
 			struct sockaddr_in* addr_in = (struct sockaddr_in*)addr;
 			std::cout << "Received: " << buffer << "  From: " << inet_ntoa(addr_in->sin_addr) << std::endl;
 		});
-		udp_mc.setTimeout(1);
 		udp_mc.receive_multicast("224.223.222.220", 6000);
 	}
 
