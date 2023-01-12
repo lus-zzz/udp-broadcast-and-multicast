@@ -22,24 +22,34 @@ extern bool exitProgram;
 
 using onReadCB = std::function<void(const char* buffer, int buffer_len, struct sockaddr *addr, int addr_len)>;
 
-class udp_broadcast
-{
+class udp_interface {
 public:
-
-
-    udp_broadcast();
-    ~udp_broadcast();
-    bool send_broadcast(const char* smsg, int smsg_len, int port);
-    bool receive_broadcast(int port);
+    udp_interface();
+    ~udp_interface();
 
     void setOnReceive(onReadCB cb);
 
-private:
+    void setTimeout(int seconds);
+
     onReadCB _on_read;
+
+    bool is_timeout{false};
+
+    struct timeval timeout{3,0};
 
 };
 
-class udp_multicast
+class udp_broadcast : public udp_interface
+{
+public:
+    udp_broadcast();
+    ~udp_broadcast();
+
+    bool send_broadcast(const char* smsg, int smsg_len, int port);
+    bool receive_broadcast(int port);
+};
+
+class udp_multicast : public udp_interface
 {
 public:
     udp_multicast();
@@ -47,12 +57,6 @@ public:
 
     bool send_multicast(const char* smsg, int smsg_len, const char *group, int port);
     bool receive_multicast(const char *group, int port);
-
-    void setOnReceive(onReadCB cb);
-
-private:
-    onReadCB _on_read;
-
 };
 
 #endif

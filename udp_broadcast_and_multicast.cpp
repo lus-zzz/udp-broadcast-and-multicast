@@ -38,8 +38,6 @@ bool udp_broadcast::receive_broadcast(int port)
  
 
 	int nb = 0;
-
-	struct timeval timeout = {3,0}; 
 	nb = setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout,sizeof(struct timeval));
 	if(nb == -1)
 	{
@@ -73,19 +71,36 @@ bool udp_broadcast::receive_broadcast(int port)
 		{		
 			_on_read(smsg, ret, (struct sockaddr*)&from, len);
 		}
+		if (is_timeout)
+			break;
 	}
     return true;
 }
 
-void udp_broadcast::setOnReceive(onReadCB cb)
+udp_interface::udp_interface()
+{
+	_on_read = [](const char* buffer, int buffer_len, struct sockaddr *addr, int addr_len) {
+		cout << "Socket not set read callback, data ignored: " << buffer_len << endl;
+	};
+}
+
+udp_interface::~udp_interface()
+{
+}
+
+void udp_interface::setOnReceive(onReadCB cb)
 {
 	if (cb) {
         _on_read = std::move(cb);
-    } else {
-        _on_read = [](const char* buffer, int buffer_len, struct sockaddr *addr, int addr_len) {
-            cout << "Socket not set read callback, data ignored: " << buffer_len << endl;
-        };
     }
+}
+
+void udp_interface::setTimeout(int seconds)
+{
+	if (seconds){
+		timeout.tv_sec = seconds;
+		is_timeout = true;
+	}
 }
 
 bool udp_broadcast::send_broadcast(const char* smsg, int smsg_len, int port)
@@ -191,8 +206,6 @@ bool udp_multicast::receive_multicast(const char *group, int port)
 	}   
 
 	int nb = 0;
-
-	struct timeval timeout = {3,0}; 
 	nb = setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout,sizeof(struct timeval));
 	if(nb == -1)
 	{
@@ -230,17 +243,9 @@ bool udp_multicast::receive_multicast(const char *group, int port)
 		{		
 			_on_read(smsg, ret, (struct sockaddr*)&from, len);
 		}
+
+		if (is_timeout)
+			break;
 	}
     return true;
-}
-
-void udp_multicast::setOnReceive(onReadCB cb)
-{
-	if (cb) {
-        _on_read = std::move(cb);
-    } else {
-        _on_read = [](const char* buffer, int buffer_len, struct sockaddr *addr, int addr_len) {
-            cout << "Socket not set read callback, data ignored: " << buffer_len << endl;
-        };
-    }
 }
