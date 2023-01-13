@@ -4,6 +4,7 @@
 #pragma once
 
 #include <iostream>
+#include <chrono>
 #include <functional>
 #include <stdio.h>
 #include <sys/socket.h>
@@ -35,7 +36,12 @@ public:
 
     bool is_timeout{false};
 
-    struct timeval timeout{3,0};
+    int timeout_sec = 0;
+
+    struct timeval timeout{1,0};
+
+    std::chrono::time_point<std::chrono::system_clock> startTP;
+    std::chrono::time_point<std::chrono::system_clock> finishTP;
 
 };
 

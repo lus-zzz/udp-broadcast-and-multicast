@@ -62,6 +62,9 @@ bool udp_broadcast::receive_broadcast(int port)
  
 	int len = sizeof(sockaddr_in);
 	char smsg[BUFFER_SIZE] = {0};
+
+	startTP = std::chrono::system_clock::now();
+
  
 	while(!exitProgram)
 	{
@@ -71,7 +74,13 @@ bool udp_broadcast::receive_broadcast(int port)
 		{		
 			_on_read(smsg, ret, (struct sockaddr*)&from, len);
 		}
-		if (is_timeout)
+
+		finishTP = std::chrono::system_clock::now();
+
+
+		int wait_time =  std::chrono::duration_cast<std::chrono::seconds>(finishTP - startTP).count();
+
+		if (is_timeout && wait_time >= timeout_sec)
 			break;
 	}
     return true;
@@ -98,8 +107,8 @@ void udp_interface::setOnReceive(onReadCB cb)
 void udp_interface::setTimeout(int seconds)
 {
 	if (seconds){
-		timeout.tv_sec = seconds;
 		is_timeout = true;
+		timeout_sec = seconds;
 	}
 }
 
@@ -180,7 +189,7 @@ bool udp_multicast::send_multicast(const char* smsg, int smsg_len, const char *g
 	}
  
 	//从组播地址发送消息
-	int ret=sendto(sock, smsg, strlen(smsg), 0, (sockaddr*)&addrto, nlen);
+	int ret=sendto(sock, smsg, smsg_len, 0, (sockaddr*)&addrto, nlen);
 	if(ret<0)
 	{
 		cout<<"send error : "<<  strerror(ret) <<endl;
@@ -243,6 +252,10 @@ bool udp_multicast::receive_multicast(const char *group, int port)
  
 	int len = sizeof(sockaddr_in);
 	char smsg[BUFFER_SIZE] = {0};
+
+	startTP = std::chrono::system_clock::now();
+//to do something
+
  
 	while(!exitProgram)
 	{
@@ -252,8 +265,11 @@ bool udp_multicast::receive_multicast(const char *group, int port)
 		{		
 			_on_read(smsg, ret, (struct sockaddr*)&from, len);
 		}
+		finishTP = std::chrono::system_clock::now();
 
-		if (is_timeout)
+		int wait_time =  std::chrono::duration_cast<std::chrono::seconds>(finishTP - startTP).count();
+
+		if (is_timeout && wait_time >= timeout_sec)
 			break;
 	}
     return true;
