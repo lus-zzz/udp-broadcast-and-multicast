@@ -13,13 +13,13 @@ target_link_libraries(md_udp -lpthread)
 
 add_custom_command(TARGET md_udp 
                     POST_BUILD 
-                    COMMAND bash -c "sshpass -p anchor@2022 scp  -o stricthostkeychecking=no ./md_udp root@192.168.0.91:/root/siproxd/"
+                    COMMAND bash -c "sshpass -p anchor@2023 scp  -o stricthostkeychecking=no ./md_udp root@192.168.0.91:/anchorapp/siproxd/"
                     VERBATIM
 )
 
 add_custom_command(TARGET md_udp 
                     POST_BUILD 
-                    COMMAND bash -c "sshpass -p anchor@2022 scp  -o stricthostkeychecking=no ./md_udp root@192.168.0.92:/root/siproxd/"
+                    COMMAND bash -c "sshpass -p anchor@2023 scp  -o stricthostkeychecking=no ./md_udp root@192.168.0.92:/anchorapp/siproxd/"
                     VERBATIM
 )
 

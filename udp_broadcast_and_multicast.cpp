@@ -30,7 +30,7 @@ bool udp_broadcast::receive_broadcast(int port)
 	from.sin_port = htons(port);
 	
 	int sock = -1;
-	if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == -1) 
+	if ((sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) 
 	{   
 		cout<<"socket error"<<endl;	
 		return false;
@@ -118,7 +118,7 @@ bool udp_broadcast::send_broadcast(const char* smsg, int smsg_len, int port)
 	fflush(stdout); 
  
 	int sock = -1;
-	if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == -1) 
+	if ((sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) 
 	{
 		cout<<"socket error"<<endl;	
 		return false;
@@ -146,6 +146,7 @@ bool udp_broadcast::send_broadcast(const char* smsg, int smsg_len, int port)
 	{
 		cout<<"send error: "<<  strerror(ret)<<ret<<endl;
 	}
+	close(sock);
     return true;
 }
 
@@ -166,7 +167,7 @@ bool udp_multicast::send_multicast(const char* smsg, int smsg_len, const char *g
 	fflush(stdout); 
  
 	int sock = -1;
-	if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == -1) 
+	if ((sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) 
 	{   
 		cout<<"socket error"<<endl;	
 		return false;
@@ -194,6 +195,7 @@ bool udp_multicast::send_multicast(const char* smsg, int smsg_len, const char *g
 	{
 		cout<<"send error : "<<  strerror(ret) <<endl;
 	}
+	close(sock);
     return true;
 }
 
@@ -202,26 +204,21 @@ bool udp_multicast::receive_multicast(const char *group, int port)
 
     setvbuf(stdout, NULL, _IONBF, 0); 
 	fflush(stdout); 
- 
-	// 绑定地址
-	struct sockaddr_in addrto;
-	bzero(&addrto, sizeof(struct sockaddr_in));
-	addrto.sin_family = AF_INET;
-	addrto.sin_addr.s_addr = htonl(INADDR_ANY);
-	addrto.sin_port = htons(port);
-	
-	struct sockaddr_in from;
-	bzero(&from, sizeof(struct sockaddr_in));
-	from.sin_family = AF_INET;
-	from.sin_addr.s_addr = htonl(INADDR_ANY);
-	from.sin_port = htons(port);
-	
+
+
 	int sock = -1;
-	if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == -1) 
+	if ((sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) 
 	{   
 		cout<<"socket error"<<endl;	
 		return false;
-	}   
+	}
+ 
+	struct sockaddr_in addr;
+	bzero(&addr, sizeof(struct sockaddr_in));
+	addr.sin_family = AF_INET;
+	addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	addr.sin_port = htons(port);
+	   
 
 	int nb = 0;
 	nb = setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout,sizeof(struct timeval));
@@ -244,7 +241,7 @@ bool udp_multicast::receive_multicast(const char *group, int port)
 
     
  
-	if(bind(sock,(struct sockaddr *)&(addrto), sizeof(struct sockaddr_in)) == -1) 
+	if(bind(sock,(struct sockaddr *)&(addr), sizeof(addr)) == -1) 
 	{   
 		cout<<"bind error..."<<endl;
 		return false;
@@ -260,10 +257,10 @@ bool udp_multicast::receive_multicast(const char *group, int port)
 	while(!exitProgram)
 	{
 		//从组播地址接受消息
-		int ret=recvfrom(sock, smsg, BUFFER_SIZE, 0, (struct sockaddr*)&from,(socklen_t*)&len);
+		int ret=recvfrom(sock, smsg, BUFFER_SIZE, 0, (struct sockaddr*)&addr,(socklen_t*)&len);
 		if (ret > 0)
 		{		
-			_on_read(smsg, ret, (struct sockaddr*)&from, len);
+			_on_read(smsg, ret, (struct sockaddr*)&addr, len);
 		}
 		finishTP = std::chrono::system_clock::now();
 

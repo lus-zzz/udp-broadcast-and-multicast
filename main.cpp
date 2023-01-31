@@ -4,6 +4,9 @@
 
 bool exitProgram = false;
 
+char addr[] = "224.223.222.221";
+int port = 1234;
+
 int main(int argc, char *argv[]) {
 	signal(SIGINT, [](int){exitProgram = true;});
 	udp_broadcast udp_bc;
@@ -14,10 +17,10 @@ int main(int argc, char *argv[]) {
 			struct sockaddr_in* addr_in = (struct sockaddr_in*)addr;
 			std::cout << "Received: " << buffer << "  From: " << inet_ntoa(addr_in->sin_addr) << std::endl;
 		});
-		udp_bc.receive_broadcast(6000);
+		udp_bc.receive_broadcast(port);
 	}	
 	if (atoi(argv[1]) == 2)
-		udp_bc.send_broadcast(msg, strlen(msg), 6000);
+		udp_bc.send_broadcast(msg, strlen(msg), port);
 
 
 	udp_multicast udp_mc;
@@ -26,13 +29,12 @@ int main(int argc, char *argv[]) {
 			struct sockaddr_in* addr_in = (struct sockaddr_in*)addr;
 			std::cout << "Received: " << buffer << "  From: " << inet_ntoa(addr_in->sin_addr) << std::endl;
 		});
-		udp_mc.receive_multicast("224.223.222.220", 6000);
+		udp_mc.receive_multicast(addr, port);
 	}
+	
 
 	if (atoi(argv[1]) == 4)
-		udp_mc.send_multicast(msg, strlen(msg), "224.223.222.220", 6000);
-
-
+		udp_mc.send_multicast(msg, strlen(msg), addr, port);
 
   return 0;
 
